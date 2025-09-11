@@ -1,3 +1,3 @@
-from .validator import DfValidator, SchemaStorage, LocalFileStorage
+from .validator import DfValidator, SchemaStorage, LocalFileStorage, Alerter, StderrAlerter
 
-__all__ = ["DfValidator", "SchemaStorage", "LocalFileStorage"]
+__all__ = ["DfValidator", "SchemaStorage", "LocalFileStorage", "Alerter", "StderrAlerter"]
