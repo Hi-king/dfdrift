@@ -16,7 +16,30 @@ A DataFrame schema validation and change detection library for pandas DataFrames
 uv pip install -e .
 ```
 
-## Quick Start
+## Usage
+
+dfvalidate offers two ways to validate DataFrames:
+
+### 1. Import Replacement
+
+Simply replace your pandas import with dfvalidate.pandas:
+
+```python
+import dfvalidate.pandas as pd
+
+# Configure validation (optional - uses default settings if omitted)
+pd.configure_validation()
+
+# All DataFrame operations are automatically validated
+df = pd.DataFrame({
+    'name': ['Alice', 'Bob', 'Charlie'],
+    'age': [25, 30, 35],
+    'city': ['Tokyo', 'Osaka', 'Kyoto']
+})
+# Schema automatically saved with location info
+```
+
+### 2. Explicit Validation
 
 ```python
 import pandas as pd
@@ -25,7 +48,7 @@ import dfvalidate
 # Create a validator instance
 validator = dfvalidate.DfValidator()
 
-# Validate a DataFrame - schema will be saved automatically
+# Validate a DataFrame manually
 df = pd.DataFrame({
     'name': ['Alice', 'Bob', 'Charlie'],
     'age': [25, 30, 35],
@@ -42,7 +65,13 @@ validator.validate(df)
 ```python
 import dfvalidate
 
-# Use custom storage directory
+# Method 1: Import replacement with custom storage
+import dfvalidate.pandas as pd
+pd.configure_validation(
+    storage=dfvalidate.LocalFileStorage("./my_schemas")
+)
+
+# Method 2: Explicit validation with custom storage
 validator = dfvalidate.DfValidator(
     storage=dfvalidate.LocalFileStorage("./my_schemas")
 )
@@ -53,10 +82,9 @@ validator = dfvalidate.DfValidator(
 ```python
 import dfvalidate
 
-# Use built-in stderr alerter (default)
-validator = dfvalidate.DfValidator(
-    alerter=dfvalidate.StderrAlerter()
-)
+# Built-in stderr alerter (default)
+import dfvalidate.pandas as pd
+pd.configure_validation(alerter=dfvalidate.StderrAlerter())
 
 # Or implement your own alerter
 class SlackAlerter(dfvalidate.Alerter):
@@ -64,7 +92,7 @@ class SlackAlerter(dfvalidate.Alerter):
         # Send to Slack
         pass
 
-validator = dfvalidate.DfValidator(alerter=SlackAlerter())
+pd.configure_validation(alerter=SlackAlerter())
 ```
 
 ## Schema Change Detection
@@ -86,9 +114,10 @@ Location: /path/to/file.py:25
 
 See the `samples/` directory for usage examples:
 
-- `samples/sample.py`: Basic usage
+- `samples/sample.py`: Explicit validation
 - `samples/sample_custom_path.py`: Custom storage path
 - `samples/sample_changing_schema.py`: Schema change detection demo
+- `samples/sample_pandas_import.py`: Import replacement
 
 ## Architecture
 
@@ -135,7 +164,10 @@ Schemas are stored as JSON with the following structure:
 Run the samples to test functionality:
 
 ```bash
-# Basic validation
+# Import replacement
+uv run python samples/sample_pandas_import.py  # Run twice to see alerts
+
+# Explicit validation
 uv run python samples/sample.py
 
 # Test schema change detection
