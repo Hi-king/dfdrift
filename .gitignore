@@ -1,4 +1,5 @@
 .python-version
+.dfvalidate_schemas
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
