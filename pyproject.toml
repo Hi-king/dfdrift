@@ -33,5 +33,24 @@ Issues = "https://github.com/Hi-king/dfdrift/issues"
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "tox>=4.0",
+]
+
 [tool.setuptools.packages.find]
 include = ["dfdrift*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=dfdrift --cov-report=term-missing --cov-report=html"
+
+[dependency-groups]
+dev = [
+    "tox>=4.30.2",
+]
