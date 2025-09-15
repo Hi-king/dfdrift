@@ -6,7 +6,7 @@ A DataFrame schema drift detection and alerting library for pandas DataFrames.
 
 - **Schema Tracking**: Automatically save DataFrame schemas with location information (file:line)
 - **Change Detection**: Detect schema changes between executions and alert when differences are found
-- **Configurable Storage**: Support for local file storage with extensible interface for future cloud storage (GCS, etc.)
+- **Configurable Storage**: Support for local file storage and Google Cloud Storage with extensible interface for future cloud storage
 - **Configurable Alerting**: Built-in stderr alerter and Slack integration with extensible interface for future integrations
 
 ## Installation
@@ -17,6 +17,12 @@ pip install dfdrift
 
 # With Slack support
 pip install dfdrift[slack]
+
+# With Google Cloud Storage support
+pip install dfdrift[gcs]
+
+# With all optional features
+pip install dfdrift[slack,gcs]
 
 # Development installation
 uv pip install -e .
@@ -66,22 +72,39 @@ validator.validate(df)
 
 ## Configuration
 
-### Custom Storage Path
+### Custom Storage
 
+#### Local File Storage
 ```python
-import dfdrift
-
-# Method 1: Import replacement with custom storage
 import dfdrift.pandas as pd
+
+# Use custom local directory
 pd.configure_validation(
     storage=dfdrift.LocalFileStorage("./my_schemas")
 )
-
-# Method 2: Explicit validation with custom storage
-validator = dfdrift.DfValidator(
-    storage=dfdrift.LocalFileStorage("./my_schemas")
-)
 ```
+
+#### Google Cloud Storage
+```python
+import dfdrift.pandas as pd
+
+# Configure GCS storage (requires: pip install dfdrift[gcs])
+# Set GCS_BUCKET and optionally GCS_PREFIX environment variables
+gcs_storage = dfdrift.GcsStorage()  # bucket and prefix from env vars
+pd.configure_validation(storage=gcs_storage)
+
+# Or pass parameters directly
+gcs_storage = dfdrift.GcsStorage(
+    bucket="my-dfdrift-bucket",
+    prefix="schemas/production"  # Optional, defaults to "dfdrift"
+)
+pd.configure_validation(storage=gcs_storage)
+```
+
+**GCS Authentication**: Use one of the following methods:
+- Set `GOOGLE_APPLICATION_CREDENTIALS` environment variable to service account key file
+- Use Application Default Credentials: `gcloud auth application-default login`
+- Use Workload Identity in GKE/Cloud Run environments
 
 ### Custom Alerter
 

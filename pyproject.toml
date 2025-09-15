@@ -3,7 +3,7 @@ name = "dfdrift"
 version = "0.1.2"
 description = "DataFrame schema drift detection and alerting"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.9,<3.13"
 license = "MIT"
 authors = [
     {name = "Keisuke Ogaki", email = "ogaki@example.com"}
@@ -42,6 +42,9 @@ test = [
 slack = [
     "slack-sdk>=3.19.0",
 ]
+gcs = [
+    "google-cloud-storage>=2.18.0",
+]
 
 [tool.setuptools.packages.find]
 include = ["dfdrift*"]
@@ -55,5 +58,5 @@ addopts = "--cov=dfdrift --cov-report=term-missing --cov-report=html --cov-repor
 
 [dependency-groups]
 dev = [
-    "tox>=4.30.2",
+    "tox>=4.0",
 ]
