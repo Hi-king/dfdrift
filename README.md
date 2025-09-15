@@ -7,12 +7,18 @@ A DataFrame schema drift detection and alerting library for pandas DataFrames.
 - **Schema Tracking**: Automatically save DataFrame schemas with location information (file:line)
 - **Change Detection**: Detect schema changes between executions and alert when differences are found
 - **Configurable Storage**: Support for local file storage with extensible interface for future cloud storage (GCS, etc.)
-- **Configurable Alerting**: Built-in stderr alerter with extensible interface for future integrations (Slack, etc.)
+- **Configurable Alerting**: Built-in stderr alerter and Slack integration with extensible interface for future integrations
 
 ## Installation
 
 ```bash
-# Install in development mode
+# Basic installation
+pip install dfdrift
+
+# With Slack support
+pip install dfdrift[slack]
+
+# Development installation
 uv pip install -e .
 ```
 
@@ -79,20 +85,42 @@ validator = dfdrift.DfValidator(
 
 ### Custom Alerter
 
+#### Stderr Alerter (Default)
+```python
+import dfdrift.pandas as pd
+
+# Built-in stderr alerter (default)
+pd.configure_validation(alerter=dfdrift.StderrAlerter())
+```
+
+#### Slack Alerter
+```python
+import dfdrift.pandas as pd
+
+# Configure Slack alerts (requires: pip install dfdrift[slack])
+# Set SLACK_BOT_TOKEN environment variable
+slack_alerter = dfdrift.SlackAlerter(channel="#data-alerts")
+pd.configure_validation(alerter=slack_alerter)
+
+# Or pass token directly (not recommended for production)
+slack_alerter = dfdrift.SlackAlerter(
+    channel="#data-alerts",
+    token="xoxb-your-bot-token"
+)
+pd.configure_validation(alerter=slack_alerter)
+```
+
+#### Custom Alerter
 ```python
 import dfdrift
 
-# Built-in stderr alerter (default)
-import dfdrift.pandas as pd
-pd.configure_validation(alerter=dfdrift.StderrAlerter())
-
-# Or implement your own alerter
-class SlackAlerter(dfdrift.Alerter):
+# Implement your own alerter
+class CustomAlerter(dfdrift.Alerter):
     def alert(self, message, location_key, old_schema, new_schema):
-        # Send to Slack
+        # Send to email, webhook, etc.
         pass
 
-pd.configure_validation(alerter=SlackAlerter())
+pd.configure_validation(alerter=CustomAlerter())
 ```
 
 ## Schema Change Detection
