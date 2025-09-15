@@ -4,13 +4,13 @@ import sys
 import json
 from unittest.mock import Mock, patch, MagicMock
 
-from dfdrift.validator import GcsStorage
+from dfdrift.storages import GcsStorage
 
 
 class TestGcsStorage:
     def test_init_with_bucket_argument(self):
         """Test GcsStorage initialization with bucket argument"""
-        with patch('dfdrift.validator.GcsStorage._import_gcs_client') as mock_import:
+        with patch('dfdrift.storages.GcsStorage._import_gcs_client') as mock_import:
             mock_client = Mock()
             mock_import.return_value = mock_client
             
@@ -24,7 +24,7 @@ class TestGcsStorage:
     def test_init_with_env_bucket(self):
         """Test GcsStorage initialization with environment variable bucket"""
         with patch.dict(os.environ, {'GCS_BUCKET': 'env-bucket', 'GCS_PREFIX': 'env-prefix'}):
-            with patch('dfdrift.validator.GcsStorage._import_gcs_client') as mock_import:
+            with patch('dfdrift.storages.GcsStorage._import_gcs_client') as mock_import:
                 mock_client = Mock()
                 mock_import.return_value = mock_client
                 
@@ -55,7 +55,7 @@ class TestGcsStorage:
 
     def test_prefix_normalization(self):
         """Test prefix normalization (remove leading slash, add trailing slash)"""
-        with patch('dfdrift.validator.GcsStorage._import_gcs_client'):
+        with patch('dfdrift.storages.GcsStorage._import_gcs_client'):
             # Test with leading slash
             storage1 = GcsStorage(bucket="test", prefix="/my-prefix")
             assert storage1.prefix == "my-prefix/"
@@ -70,7 +70,7 @@ class TestGcsStorage:
 
     def test_save_schema_success(self):
         """Test successful schema saving to GCS"""
-        with patch('dfdrift.validator.GcsStorage._import_gcs_client') as mock_import:
+        with patch('dfdrift.storages.GcsStorage._import_gcs_client') as mock_import:
             mock_client = Mock()
             mock_bucket = Mock()
             mock_blob = Mock()
@@ -100,7 +100,7 @@ class TestGcsStorage:
 
     def test_save_schema_error_handling(self):
         """Test error handling during schema save"""
-        with patch('dfdrift.validator.GcsStorage._import_gcs_client') as mock_import:
+        with patch('dfdrift.storages.GcsStorage._import_gcs_client') as mock_import:
             mock_client = Mock()
             mock_client.bucket.side_effect = Exception("GCS error")
             mock_import.return_value = mock_client
@@ -114,7 +114,7 @@ class TestGcsStorage:
 
     def test_load_schemas_success(self):
         """Test successful schema loading from GCS"""
-        with patch('dfdrift.validator.GcsStorage._import_gcs_client') as mock_import:
+        with patch('dfdrift.storages.GcsStorage._import_gcs_client') as mock_import:
             mock_client = Mock()
             mock_bucket = Mock()
             mock_blob = Mock()
@@ -139,7 +139,7 @@ class TestGcsStorage:
 
     def test_load_schemas_file_not_exists(self):
         """Test loading schemas when file doesn't exist"""
-        with patch('dfdrift.validator.GcsStorage._import_gcs_client') as mock_import:
+        with patch('dfdrift.storages.GcsStorage._import_gcs_client') as mock_import:
             mock_client = Mock()
             mock_bucket = Mock()
             mock_blob = Mock()
@@ -156,7 +156,7 @@ class TestGcsStorage:
 
     def test_load_schemas_error_handling(self):
         """Test error handling during schema load"""
-        with patch('dfdrift.validator.GcsStorage._import_gcs_client') as mock_import:
+        with patch('dfdrift.storages.GcsStorage._import_gcs_client') as mock_import:
             mock_client = Mock()
             mock_client.bucket.side_effect = Exception("GCS error")
             mock_import.return_value = mock_client
@@ -169,13 +169,13 @@ class TestGcsStorage:
 
     def test_custom_prefix_in_blob_name(self):
         """Test custom prefix is used in blob name"""
-        with patch('dfdrift.validator.GcsStorage._import_gcs_client'):
+        with patch('dfdrift.storages.GcsStorage._import_gcs_client'):
             storage = GcsStorage(bucket="test-bucket", prefix="custom/path")
             assert storage.schema_blob_name == "custom/path/schemas.json"
 
     def test_default_prefix(self):
         """Test default prefix is 'dfdrift'"""
-        with patch('dfdrift.validator.GcsStorage._import_gcs_client'):
+        with patch('dfdrift.storages.GcsStorage._import_gcs_client'):
             storage = GcsStorage(bucket="test-bucket")
             assert storage.prefix == "dfdrift/"
             assert storage.schema_blob_name == "dfdrift/schemas.json"

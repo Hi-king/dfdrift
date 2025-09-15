@@ -1,4 +1,5 @@
-from .validator import DfValidator, SchemaStorage, LocalFileStorage, GcsStorage
+from .validator import DfValidator
+from .storages import SchemaStorage, LocalFileStorage, GcsStorage
 from .alerters import Alerter, StderrAlerter, SlackAlerter
 from . import pandas
 

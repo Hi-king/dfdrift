@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 import dfdrift.pandas as dfdrift_pandas
-from dfdrift.validator import LocalFileStorage
+from dfdrift.storages import LocalFileStorage
 
 
 class TestSchemaChangeDetection:

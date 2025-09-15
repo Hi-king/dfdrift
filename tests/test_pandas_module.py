@@ -4,7 +4,7 @@ import tempfile
 from unittest.mock import Mock, patch
 
 import dfdrift.pandas as dfdrift_pandas
-from dfdrift.validator import LocalFileStorage
+from dfdrift.storages import LocalFileStorage
 
 
 class TestPandasModule:
