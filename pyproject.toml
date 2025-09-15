@@ -1,12 +1,37 @@
 [project]
 name = "dfdrift"
-version = "0.1.0"
+version = "0.1.2"
 description = "DataFrame schema drift detection and alerting"
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    "pandas>=2.3.2",
+requires-python = ">=3.9"
+license = "MIT"
+authors = [
+    {name = "Keisuke Ogaki", email = "ogaki@example.com"}
 ]
+keywords = ["pandas", "dataframe", "schema", "drift", "validation", "monitoring"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "pandas>=1.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Hi-king/dfdrift"
+Repository = "https://github.com/Hi-king/dfdrift"
+Issues = "https://github.com/Hi-king/dfdrift/issues"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["dfdrift*"]
