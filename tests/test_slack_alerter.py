@@ -4,13 +4,13 @@ from unittest.mock import Mock, patch, MagicMock
 from io import StringIO
 import sys
 
-from dfdrift.validator import SlackAlerter
+from dfdrift.alerters import SlackAlerter
 
 
 class TestSlackAlerter:
     def test_init_with_token_argument(self):
         """Test SlackAlerter initialization with token argument"""
-        with patch('dfdrift.validator.SlackAlerter._import_slack_sdk') as mock_import:
+        with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
             mock_client = Mock()
             mock_import.return_value = mock_client
             
@@ -23,7 +23,7 @@ class TestSlackAlerter:
     def test_init_with_env_token(self):
         """Test SlackAlerter initialization with environment variable token"""
         with patch.dict(os.environ, {'SLACK_BOT_TOKEN': 'env-token'}):
-            with patch('dfdrift.validator.SlackAlerter._import_slack_sdk') as mock_import:
+            with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
                 mock_client = Mock()
                 mock_import.return_value = mock_client
                 
@@ -49,7 +49,7 @@ class TestSlackAlerter:
 
     def test_init_missing_slack_sdk_raises_import_error(self):
         """Test SlackAlerter raises ImportError when slack-sdk not installed"""
-        with patch('dfdrift.validator.SlackAlerter._import_slack_sdk') as mock_import:
+        with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
             mock_import.side_effect = ImportError("No module named 'slack_sdk'")
             
             with pytest.raises(ImportError) as exc_info:
@@ -60,7 +60,7 @@ class TestSlackAlerter:
 
     def test_alert_success(self):
         """Test successful Slack alert"""
-        with patch('dfdrift.validator.SlackAlerter._import_slack_sdk') as mock_import:
+        with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
             mock_client = Mock()
             mock_client.chat_postMessage.return_value = {"ok": True}
             mock_import.return_value = mock_client
@@ -82,7 +82,7 @@ class TestSlackAlerter:
 
     def test_alert_with_column_changes(self):
         """Test Slack alert with column additions and removals"""
-        with patch('dfdrift.validator.SlackAlerter._import_slack_sdk') as mock_import:
+        with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
             mock_client = Mock()
             mock_client.chat_postMessage.return_value = {"ok": True}
             mock_import.return_value = mock_client
@@ -110,7 +110,7 @@ class TestSlackAlerter:
 
     def test_alert_slack_api_error_fallback(self):
         """Test fallback to stderr when Slack API returns error"""
-        with patch('dfdrift.validator.SlackAlerter._import_slack_sdk') as mock_import:
+        with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
             mock_client = Mock()
             mock_client.chat_postMessage.return_value = {"ok": False, "error": "channel_not_found"}
             mock_import.return_value = mock_client
@@ -128,7 +128,7 @@ class TestSlackAlerter:
 
     def test_alert_exception_fallback(self):
         """Test fallback to stderr when exception occurs"""
-        with patch('dfdrift.validator.SlackAlerter._import_slack_sdk') as mock_import:
+        with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
             mock_client = Mock()
             mock_client.chat_postMessage.side_effect = Exception("Network error")
             mock_import.return_value = mock_client
@@ -146,7 +146,7 @@ class TestSlackAlerter:
 
     def test_channel_is_required(self):
         """Test channel parameter is required"""
-        with patch('dfdrift.validator.SlackAlerter._import_slack_sdk') as mock_import:
+        with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
             mock_client = Mock()
             mock_import.return_value = mock_client
             

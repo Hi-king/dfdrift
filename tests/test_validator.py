@@ -7,7 +7,8 @@ from unittest.mock import Mock, patch
 from io import StringIO
 import sys
 
-from dfdrift.validator import DfValidator, LocalFileStorage, StderrAlerter
+from dfdrift.validator import DfValidator, LocalFileStorage
+from dfdrift.alerters import StderrAlerter
 
 
 class TestLocalFileStorage:
