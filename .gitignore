@@ -1,5 +1,7 @@
 .python-version
 .dfvalidate_schemas
+.dfdrift_schemas/
+custom_schemas/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

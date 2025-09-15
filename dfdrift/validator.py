@@ -19,7 +19,7 @@ class SchemaStorage(ABC):
 
 
 class LocalFileStorage(SchemaStorage):
-    def __init__(self, storage_path: Union[str, Path] = ".dfvalidate_schemas"):
+    def __init__(self, storage_path: Union[str, Path] = ".dfdrift_schemas"):
         self.storage_path = Path(storage_path)
         self.schema_file = self.storage_path / "schemas.json"
     

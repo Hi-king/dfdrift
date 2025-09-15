@@ -1,6 +1,6 @@
-# dfvalidate
+# dfdrift
 
-A DataFrame schema validation and change detection library for pandas DataFrames.
+A DataFrame schema drift detection and alerting library for pandas DataFrames.
 
 ## Features
 
@@ -18,14 +18,14 @@ uv pip install -e .
 
 ## Usage
 
-dfvalidate offers two ways to validate DataFrames:
+dfdrift offers two ways to validate DataFrames:
 
 ### 1. Import Replacement
 
-Simply replace your pandas import with dfvalidate.pandas:
+Simply replace your pandas import with dfdrift.pandas:
 
 ```python
-import dfvalidate.pandas as pd
+import dfdrift.pandas as pd
 
 # Configure validation (optional - uses default settings if omitted)
 pd.configure_validation()
@@ -43,10 +43,10 @@ df = pd.DataFrame({
 
 ```python
 import pandas as pd
-import dfvalidate
+import dfdrift
 
 # Create a validator instance
-validator = dfvalidate.DfValidator()
+validator = dfdrift.DfValidator()
 
 # Validate a DataFrame manually
 df = pd.DataFrame({
@@ -63,31 +63,31 @@ validator.validate(df)
 ### Custom Storage Path
 
 ```python
-import dfvalidate
+import dfdrift
 
 # Method 1: Import replacement with custom storage
-import dfvalidate.pandas as pd
+import dfdrift.pandas as pd
 pd.configure_validation(
-    storage=dfvalidate.LocalFileStorage("./my_schemas")
+    storage=dfdrift.LocalFileStorage("./my_schemas")
 )
 
 # Method 2: Explicit validation with custom storage
-validator = dfvalidate.DfValidator(
-    storage=dfvalidate.LocalFileStorage("./my_schemas")
+validator = dfdrift.DfValidator(
+    storage=dfdrift.LocalFileStorage("./my_schemas")
 )
 ```
 
 ### Custom Alerter
 
 ```python
-import dfvalidate
+import dfdrift
 
 # Built-in stderr alerter (default)
-import dfvalidate.pandas as pd
-pd.configure_validation(alerter=dfvalidate.StderrAlerter())
+import dfdrift.pandas as pd
+pd.configure_validation(alerter=dfdrift.StderrAlerter())
 
 # Or implement your own alerter
-class SlackAlerter(dfvalidate.Alerter):
+class SlackAlerter(dfdrift.Alerter):
     def alert(self, message, location_key, old_schema, new_schema):
         # Send to Slack
         pass
@@ -97,7 +97,7 @@ pd.configure_validation(alerter=SlackAlerter())
 
 ## Schema Change Detection
 
-When a DataFrame schema changes between executions, dfvalidate will automatically detect and alert:
+When a DataFrame schema changes between executions, dfdrift will automatically detect and alert:
 
 - **Added columns**: New columns that weren't in the previous schema
 - **Removed columns**: Columns that existed before but are now missing

@@ -1,7 +1,7 @@
 [project]
-name = "dfvalidate"
+name = "dfdrift"
 version = "0.1.0"
-description = "Add your description here"
+description = "DataFrame schema drift detection and alerting"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -9,4 +9,4 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["dfvalidate*"]
+include = ["dfdrift*"]

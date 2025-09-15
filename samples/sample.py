@@ -1,8 +1,8 @@
 import pandas as pd
-import dfvalidate
+import dfdrift
 
 def main():
-    validator = dfvalidate.DfValidator()
+    validator = dfdrift.DfValidator()
     
     df1 = pd.DataFrame({
         'name': ['Alice', 'Bob', 'Charlie'],

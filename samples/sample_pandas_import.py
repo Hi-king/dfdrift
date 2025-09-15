@@ -1,11 +1,11 @@
-import dfvalidate.pandas as pd
+import dfdrift.pandas as pd
 import pandas as pd_original
 from datetime import datetime
 
 def main():
     pd.configure_validation()
     
-    print("Using dfvalidate.pandas as pd")
+    print("Using dfdrift.pandas as pd")
     
     df1 = pd.DataFrame({
         'name': ['Alice', 'Bob', 'Charlie'],
@@ -34,7 +34,7 @@ def main():
     })
     print("Created df with original pandas - should NOT be logged")
     
-    print(f"dfvalidate.pandas DataFrame type: {type(df1)}")
+    print(f"dfdrift.pandas DataFrame type: {type(df1)}")
     print(f"Original pandas DataFrame type: {type(df_original)}")
     print(f"DataFrame shape: {df1.shape}")
     print(f"Pandas version: {pd.__version__}")

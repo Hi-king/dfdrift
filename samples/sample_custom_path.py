@@ -1,9 +1,9 @@
 import pandas as pd
-import dfvalidate
+import dfdrift
 
 def main():
-    custom_validator = dfvalidate.DfValidator(
-        storage=dfvalidate.LocalFileStorage("./custom_schemas")
+    custom_validator = dfdrift.DfValidator(
+        storage=dfdrift.LocalFileStorage("./custom_schemas")
     )
     
     df = pd.DataFrame({
