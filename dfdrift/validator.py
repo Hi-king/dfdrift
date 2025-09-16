@@ -56,7 +56,18 @@ class DfValidator:
         }
     
     def _schemas_equal(self, schema1: Dict[str, Any], schema2: Dict[str, Any]) -> bool:
-        return schema1 == schema2
+        # Compare only column dtypes, not shape or row counts (these can vary)
+        columns1 = schema1.get("columns", {})
+        columns2 = schema2.get("columns", {})
+        
+        if set(columns1.keys()) != set(columns2.keys()):
+            return False
+        
+        for column in columns1:
+            if columns1[column]["dtype"] != columns2[column]["dtype"]:
+                return False
+        
+        return True
     
     def _get_schema_differences(self, old_schema: Dict[str, Any], new_schema: Dict[str, Any]) -> str:
         differences = []
@@ -79,10 +90,7 @@ class DfValidator:
             if old_col["dtype"] != new_col["dtype"]:
                 differences.append(f"Column '{column}' dtype changed: {old_col['dtype']} → {new_col['dtype']}")
         
-        old_shape = old_schema.get("shape", [])
-        new_shape = new_schema.get("shape", [])
-        if old_shape != new_shape:
-            differences.append(f"Shape changed: {old_shape} → {new_shape}")
+        # Note: Shape (row count) changes are ignored as they are expected to vary
         
         return "; ".join(differences) if differences else "Unknown change"
 

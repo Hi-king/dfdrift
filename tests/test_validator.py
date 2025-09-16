@@ -83,11 +83,13 @@ class TestDfValidator:
         
     def test_schemas_equal(self):
         validator = DfValidator()
-        schema1 = {"columns": {"a": {"dtype": "int64"}}, "shape": [1, 1]}
-        schema2 = {"columns": {"a": {"dtype": "int64"}}, "shape": [1, 1]}
-        schema3 = {"columns": {"a": {"dtype": "object"}}, "shape": [1, 1]}
+        schema1 = {"columns": {"a": {"dtype": "int64", "null_count": 0, "total_count": 10}}, "shape": [10, 1]}
+        schema2 = {"columns": {"a": {"dtype": "int64", "null_count": 1, "total_count": 20}}, "shape": [20, 1]}
+        schema3 = {"columns": {"a": {"dtype": "object", "null_count": 0, "total_count": 10}}, "shape": [10, 1]}
         
+        # Same dtype, different shape/counts -> should be equal
         assert validator._schemas_equal(schema1, schema2) is True
+        # Different dtype -> should be different
         assert validator._schemas_equal(schema1, schema3) is False
 
     def test_get_schema_differences(self):
@@ -106,7 +108,7 @@ class TestDfValidator:
                 "age": {"dtype": "object"},  # dtype changed
                 "new_col": {"dtype": "int64"}  # added column
             },
-            "shape": [4, 3]  # shape changed
+            "shape": [4, 3]  # shape changed (but should be ignored)
         }
         
         differences = validator._get_schema_differences(old_schema, new_schema)
@@ -114,7 +116,8 @@ class TestDfValidator:
         assert "Added columns: ['new_col']" in differences
         assert "Removed columns: ['removed_col']" in differences
         assert "Column 'age' dtype changed: int64 → object" in differences
-        assert "Shape changed: [3, 3] → [4, 3]" in differences
+        # Shape changes should NOT be reported
+        assert "Shape changed" not in differences
 
     def test_validate_new_schema(self):
         storage = Mock()
@@ -176,4 +179,30 @@ class TestDfValidator:
             validator.validate(df)
         
         storage.save_schema.assert_called_once()
+        alerter.alert.assert_not_called()
+
+    def test_validate_schema_unchanged_different_row_count(self):
+        """Test that changing only row count doesn't trigger alert"""
+        schema = {
+            "columns": {"col": {"dtype": "int64", "null_count": 0, "total_count": 3}},
+            "shape": [3, 1]
+        }
+        storage = Mock()
+        alerter = Mock()
+        storage.load_schemas.return_value = {"test.py:10": schema}
+        
+        validator = DfValidator(storage=storage, alerter=alerter)
+        # Same dtype, different row count
+        df = pd.DataFrame({'col': [1, 2, 3, 4, 5]})  # 5 rows instead of 3
+        
+        with patch('inspect.currentframe') as mock_frame:
+            mock_caller = Mock()
+            mock_caller.f_code.co_filename = "test.py"
+            mock_caller.f_lineno = 10
+            mock_frame.return_value.f_back = mock_caller
+            
+            validator.validate(df)
+        
+        storage.save_schema.assert_called_once()
+        # Should NOT trigger alert even though row count changed
         alerter.alert.assert_not_called()

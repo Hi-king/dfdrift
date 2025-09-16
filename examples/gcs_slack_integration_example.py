@@ -72,8 +72,9 @@ def production_example():
         print(f"✓ Slack Alerter configured: Using Bot Token -> {slack_alerter.channel}")
     
     current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    
     # First run - establish baseline schema
-    print("\n--- Creating baseline schema ---")
+    print("\n--- Creating baseline schema (4 users) ---")
     users_df = pd.DataFrame({
         f'user_id{current_time}': [1001, 1002, 1003, 1004],
         'username': ['alice', 'bob', 'charlie', 'diana'],
@@ -84,6 +85,36 @@ def production_example():
     
     validator.validate(users_df)
     print("✓ Baseline schema saved to GCS")
+    
+    # Second run - different row count, same schema (should NOT trigger alert)
+    print("\n--- Processing larger dataset (10 users) ---")
+    print("Note: Row count changes are ignored by design")
+    users_df_larger = pd.DataFrame({
+        f'user_id{current_time}': [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010],
+        'username': ['alice', 'bob', 'charlie', 'diana', 'eve', 'frank', 'grace', 'henry', 'iris', 'jack'],
+        'email': ['alice@example.com', 'bob@example.com', 'charlie@example.com', 'diana@example.com',
+                 'eve@example.com', 'frank@example.com', 'grace@example.com', 'henry@example.com', 
+                 'iris@example.com', 'jack@example.com'],
+        'age': [25, 30, 35, 28, 24, 45, 32, 38, 29, 41],
+        'status': ['active', 'active', 'inactive', 'active', 'active', 'active', 'inactive', 'active', 'active', 'inactive']
+    })
+    
+    validator.validate(users_df_larger)
+    print("✓ No alert - row count changes are expected and ignored")
+    
+    # Third run - actual schema change (should trigger alert)
+    print("\n--- Schema change detected (new column added) ---")
+    users_df_new_col = pd.DataFrame({
+        f'user_id{current_time}': [1001, 1002, 1003],
+        'username': ['alice', 'bob', 'charlie'],
+        'email': ['alice@example.com', 'bob@example.com', 'charlie@example.com'],
+        'age': [25, 30, 35],
+        'status': ['active', 'active', 'inactive'],
+        'department': ['engineering', 'marketing', 'sales']  # New column!
+    })
+    
+    validator.validate(users_df_new_col)
+    print("✓ Schema change detected and Slack notification sent!")
 
 
 if __name__ == "__main__":
