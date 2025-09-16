@@ -1,5 +1,8 @@
 import pytest
 import os
+import json
+import urllib.request
+import urllib.error
 from unittest.mock import Mock, patch, MagicMock
 from io import StringIO
 import sys
@@ -38,7 +41,7 @@ class TestSlackAlerter:
             with pytest.raises(ValueError) as exc_info:
                 SlackAlerter(channel="#test")
             
-            assert "Slack token must be provided" in str(exc_info.value)
+            assert "Either SLACK_WEBHOOK_URL or SLACK_BOT_TOKEN must be provided" in str(exc_info.value)
 
     def test_init_no_channel_raises_error(self):
         """Test SlackAlerter raises error when no channel provided"""
@@ -46,7 +49,7 @@ class TestSlackAlerter:
             with pytest.raises(ValueError) as exc_info:
                 SlackAlerter(token="test-token")  # No channel argument or env var
             
-            assert "Slack channel must be provided either as argument or SLACK_CHANNEL environment variable" in str(exc_info.value)
+            assert "SLACK_CHANNEL must be provided when using bot token" in str(exc_info.value)
 
     def test_init_with_env_channel(self):
         """Test SlackAlerter initialization with environment variable channel"""
@@ -149,7 +152,8 @@ class TestSlackAlerter:
                 alerter.alert("Test message", "test.py:20", {}, {})
             
             output = captured_output.getvalue()
-            assert "Failed to send Slack message: channel_not_found" in output
+            assert "Error sending Slack notification:" in output
+            assert "Bot message failed: channel_not_found" in output
             assert "WARNING: Test message" in output
             assert "Location: test.py:20" in output
 
@@ -179,3 +183,138 @@ class TestSlackAlerter:
             
             alerter = SlackAlerter(channel="#custom-channel", token="test-token")
             assert alerter.channel == "#custom-channel"
+
+    # Webhook tests
+    def test_init_with_webhook_url(self):
+        """Test SlackAlerter initialization with webhook URL"""
+        webhook_url = "https://hooks.slack.com/services/test/webhook"
+        alerter = SlackAlerter(webhook_url=webhook_url)
+        
+        assert alerter.webhook_url == webhook_url
+        assert alerter.client is None  # No client needed for webhooks
+
+    def test_init_with_env_webhook_url(self):
+        """Test SlackAlerter initialization with environment variable webhook URL"""
+        webhook_url = "https://hooks.slack.com/services/env/webhook"
+        with patch.dict(os.environ, {'SLACK_WEBHOOK_URL': webhook_url}):
+            alerter = SlackAlerter()
+            
+            assert alerter.webhook_url == webhook_url
+            assert alerter.client is None
+
+    def test_webhook_priority_over_token(self):
+        """Test webhook URL takes priority over bot token"""
+        webhook_url = "https://hooks.slack.com/services/priority/test"
+        with patch.dict(os.environ, {'SLACK_WEBHOOK_URL': webhook_url, 'SLACK_BOT_TOKEN': 'token'}):
+            alerter = SlackAlerter()
+            
+            assert alerter.webhook_url == webhook_url
+            assert alerter.client is None  # Should not create client when webhook is available
+
+    def test_webhook_alert_success(self):
+        """Test successful webhook alert"""
+        webhook_url = "https://hooks.slack.com/services/test/webhook"
+        
+        with patch('urllib.request.urlopen') as mock_urlopen:
+            mock_response = Mock()
+            mock_response.status = 200
+            mock_urlopen.return_value.__enter__.return_value = mock_response
+            
+            alerter = SlackAlerter(webhook_url=webhook_url)
+            
+            old_schema = {"columns": {"name": {"dtype": "object"}}, "shape": [3, 1]}
+            new_schema = {"columns": {"name": {"dtype": "int64"}}, "shape": [3, 1]}
+            
+            alerter.alert("Test webhook message", "test.py:10", old_schema, new_schema)
+            
+            # Verify the request was made
+            mock_urlopen.assert_called_once()
+            call_args = mock_urlopen.call_args[0][0]  # Get the Request object
+            
+            assert call_args.full_url == webhook_url
+            assert call_args.headers['Content-type'] == 'application/json'
+            
+            # Verify the payload
+            data = json.loads(call_args.data.decode('utf-8'))
+            assert "DataFrame Schema Drift Detected" in data["text"]
+            assert "test.py:10" in data["text"]
+            assert "Test webhook message" in data["text"]
+            assert data["mrkdwn"] is True
+
+    def test_webhook_alert_with_column_changes(self):
+        """Test webhook alert with column changes"""
+        webhook_url = "https://hooks.slack.com/services/test/webhook"
+        
+        with patch('urllib.request.urlopen') as mock_urlopen:
+            mock_response = Mock()
+            mock_response.status = 200
+            mock_urlopen.return_value.__enter__.return_value = mock_response
+            
+            alerter = SlackAlerter(webhook_url=webhook_url)
+            
+            old_schema = {
+                "columns": {"name": {"dtype": "object"}, "age": {"dtype": "int64"}},
+                "shape": [3, 2]
+            }
+            new_schema = {
+                "columns": {"name": {"dtype": "object"}, "email": {"dtype": "object"}},
+                "shape": [3, 2]
+            }
+            
+            alerter.alert("Schema changed", "test.py:15", old_schema, new_schema)
+            
+            # Verify the payload contains column change information
+            call_args = mock_urlopen.call_args[0][0]
+            data = json.loads(call_args.data.decode('utf-8'))
+            message_text = data["text"]
+            
+            assert "Added columns:" in message_text
+            assert "`email`" in message_text
+            assert "Removed columns:" in message_text
+            assert "`age`" in message_text
+
+    def test_webhook_alert_http_error_fallback(self):
+        """Test fallback to stderr when webhook returns HTTP error"""
+        webhook_url = "https://hooks.slack.com/services/test/webhook"
+        
+        with patch('urllib.request.urlopen') as mock_urlopen:
+            mock_response = Mock()
+            mock_response.status = 404
+            mock_urlopen.return_value.__enter__.return_value = mock_response
+            
+            alerter = SlackAlerter(webhook_url=webhook_url)
+            
+            captured_output = StringIO()
+            with patch('sys.stderr', captured_output):
+                alerter.alert("Test message", "test.py:20", {}, {})
+            
+            output = captured_output.getvalue()
+            assert "Error sending Slack notification:" in output
+            assert "WARNING: Test message" in output
+            assert "Location: test.py:20" in output
+
+    def test_webhook_alert_network_error_fallback(self):
+        """Test fallback to stderr when network error occurs"""
+        webhook_url = "https://hooks.slack.com/services/test/webhook"
+        
+        with patch('urllib.request.urlopen') as mock_urlopen:
+            mock_urlopen.side_effect = urllib.error.URLError("Network unreachable")
+            
+            alerter = SlackAlerter(webhook_url=webhook_url)
+            
+            captured_output = StringIO()
+            with patch('sys.stderr', captured_output):
+                alerter.alert("Test message", "test.py:25", {}, {})
+            
+            output = captured_output.getvalue()
+            assert "Error sending Slack notification:" in output
+            assert "WARNING: Test message" in output
+            assert "Location: test.py:25" in output
+
+    def test_no_webhook_no_token_raises_error(self):
+        """Test SlackAlerter raises error when neither webhook nor token provided"""
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(ValueError) as exc_info:
+                SlackAlerter()
+            
+            assert "Either SLACK_WEBHOOK_URL or SLACK_BOT_TOKEN must be provided" in str(exc_info.value)

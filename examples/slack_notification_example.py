@@ -6,21 +6,84 @@ notifications to Slack instead of stderr.
 
 Requirements:
 - Install slack support: pip install dfdrift[slack]
-- Create a Slack Bot Token from https://api.slack.com/apps
-- Set up the bot with chat:write permissions
-- Add the bot to your desired channel
+
+Two authentication methods are supported:
+1. Incoming Webhook (Recommended):
+   - Create an Incoming Webhook from https://api.slack.com/apps
+   - Simpler setup, no additional permissions needed
+   - Set SLACK_WEBHOOK_URL environment variable
+
+2. Bot Token (Advanced):
+   - Create a Slack Bot Token from https://api.slack.com/apps
+   - Set up the bot with chat:write permissions
+   - Add the bot to your desired channel
+   - Set SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables
 """
 
 import os
 import pandas as pd
 import dfdrift
 
-# Method 1: Using environment variables (recommended)
+# Method 1: Using Incoming Webhook (recommended)
+# Set SLACK_WEBHOOK_URL environment variable
+# export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+
+def example_with_webhook():
+    """Example using Slack Incoming Webhook (simplest configuration)"""
+    
+    # Configure with Slack webhook alerts using environment variable
+    storage = dfdrift.LocalFileStorage("./webhook_slack_schemas")
+    slack_alerter = dfdrift.SlackAlerter()  # webhook URL from SLACK_WEBHOOK_URL env var
+    
+    validator = dfdrift.DfValidator(storage=storage, alerter=slack_alerter)
+    
+    # First run - creates initial schema
+    df1 = pd.DataFrame({
+        'user_id': [1, 2, 3],
+        'name': ['Alice', 'Bob', 'Charlie'],
+        'age': [25, 30, 35]
+    })
+    validator.validate(df1)
+    print("First validation complete - schema saved")
+    
+    # Second run - schema change (dtype change)
+    df2 = pd.DataFrame({
+        'user_id': ['a', 'b', 'c'],  # Changed to string!
+        'name': ['David', 'Eve', 'Frank'],
+        'age2': [28, 32, 27]  # Column name changed
+    })
+    validator.validate(df2)
+    print("Second validation complete - Slack webhook alert sent!")
+
+
+def example_with_webhook_direct():
+    """Example using Slack Incoming Webhook with direct URL"""
+    
+    # Configure with webhook URL directly (for testing)
+    storage = dfdrift.LocalFileStorage("./webhook_direct_schemas")
+    slack_alerter = dfdrift.SlackAlerter(
+        webhook_url="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+    )
+    
+    validator = dfdrift.DfValidator(storage=storage, alerter=slack_alerter)
+    
+    # Create DataFrame with schema change
+    df = pd.DataFrame({
+        'product_id': [101, 102, 103],
+        'price': [29.99, 39.99, 49.99],
+        'category': ['A', 'B', 'C'],
+        'in_stock': [True, False, True]  # New column
+    })
+    validator.validate(df)
+    print("Webhook direct example completed!")
+
+
+# Method 2: Using Bot Token (advanced)
 # Set SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables
 # export SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
 # export SLACK_CHANNEL="#data-alerts"
 
-def example_with_env_vars():
+def example_with_bot_token_env_vars():
     """Example using SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables"""
     
     # Configure with Slack alerts using environment variables
@@ -48,8 +111,8 @@ def example_with_env_vars():
     print("Second validation complete - Slack alert sent!")
 
 
-# Method 2: Using partial environment variables
-def example_with_env_token_only():
+# Method 3: Using partial bot token environment variables
+def example_with_bot_token_env_token_only():
     """Example using SLACK_BOT_TOKEN env var with channel argument"""
     
     # Set SLACK_BOT_TOKEN environment variable, specify channel in code
@@ -70,7 +133,7 @@ def example_with_env_token_only():
     validator.validate(df)
 
 
-# Method 3: Using with pandas module wrapper
+# Method 4: Using with pandas module wrapper
 def example_with_pandas_wrapper():
     """Example using dfdrift.pandas wrapper with Slack alerts"""
     
@@ -95,8 +158,8 @@ def example_with_pandas_wrapper():
     print("DataFrame created and monitored automatically!")
 
 
-# Method 4: Using direct arguments (not recommended for production)
-def example_with_direct_arguments():
+# Method 5: Using bot token direct arguments (not recommended for production)
+def example_with_bot_token_direct_arguments():
     """Example passing both token and channel directly (for testing)"""
     
     # Configure with Slack alerts using direct arguments
@@ -119,25 +182,41 @@ def example_with_direct_arguments():
 
 if __name__ == "__main__":
     print("Slack notification examples for dfdrift")
-    print("Make sure to set SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables")
+    print("Two authentication methods supported:")
+    print("1. Incoming Webhook (recommended): Set SLACK_WEBHOOK_URL")
+    print("2. Bot Token (advanced): Set SLACK_BOT_TOKEN and SLACK_CHANNEL")
     
-    # Check if token and channel are available
-    if not os.getenv("SLACK_BOT_TOKEN"):
-        print("Warning: SLACK_BOT_TOKEN not set. Set it before running examples:")
+    # Check if webhook URL or bot token is available
+    has_webhook = bool(os.getenv("SLACK_WEBHOOK_URL"))
+    has_bot_token = bool(os.getenv("SLACK_BOT_TOKEN"))
+    
+    if not has_webhook and not has_bot_token:
+        print("\nNo Slack configuration found. Choose one option:")
+        print("\nOption 1 (Recommended) - Incoming Webhook:")
+        print("export SLACK_WEBHOOK_URL='https://hooks.slack.com/services/YOUR/WEBHOOK/URL'")
+        print("\nOption 2 (Advanced) - Bot Token:")
         print("export SLACK_BOT_TOKEN='xoxb-your-bot-token-here'")
         print("export SLACK_CHANNEL='#data-alerts'")
         exit(1)
     
-    print("\n1. Running example with environment variables...")
-    example_with_env_vars()
+    if has_webhook:
+        print("\n1. Running webhook example with environment variable...")
+        example_with_webhook()
+        
+        print("\n2. Running webhook example with direct URL...")
+        example_with_webhook_direct()
     
-    print("\n2. Running example with partial environment variables...")
-    example_with_env_token_only()
-    
-    print("\n3. Running example with pandas wrapper...")
-    example_with_pandas_wrapper()
-    
-    print("\n4. Running example with direct arguments...")
-    example_with_direct_arguments()
+    if has_bot_token:
+        print("\n3. Running bot token example with environment variables...")
+        example_with_bot_token_env_vars()
+        
+        print("\n4. Running bot token example with partial environment variables...")
+        example_with_bot_token_env_token_only()
+        
+        print("\n5. Running example with pandas wrapper...")
+        example_with_pandas_wrapper()
+        
+        print("\n6. Running bot token example with direct arguments...")
+        example_with_bot_token_direct_arguments()
     
     print("\nAll examples completed! Check your Slack channel for notifications.")
