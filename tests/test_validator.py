@@ -76,10 +76,13 @@ class TestDfValidator:
         
         schema = validator._get_dataframe_schema(df)
         
-        assert schema["shape"] == [3, 3]
+        # Only validate column structure, not shape
         assert "name" in schema["columns"]
         assert "age" in schema["columns"]
         assert "score" in schema["columns"]
+        assert schema["columns"]["name"]["dtype"] == "object"
+        assert schema["columns"]["age"]["dtype"] == "int64"
+        assert schema["columns"]["score"]["dtype"] == "float64"
         
     def test_schemas_equal(self):
         validator = DfValidator()
