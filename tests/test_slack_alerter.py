@@ -25,7 +25,7 @@ class TestSlackAlerter:
 
     def test_init_with_env_token(self):
         """Test SlackAlerter initialization with environment variable token"""
-        with patch.dict(os.environ, {'SLACK_BOT_TOKEN': 'env-token'}):
+        with patch.dict(os.environ, {'DFDRIFT_SLACK_BOT_TOKEN': 'env-token'}):
             with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
                 mock_client = Mock()
                 mock_import.return_value = mock_client
@@ -41,7 +41,7 @@ class TestSlackAlerter:
             with pytest.raises(ValueError) as exc_info:
                 SlackAlerter(channel="#test")
             
-            assert "Either SLACK_WEBHOOK_URL or SLACK_BOT_TOKEN must be provided" in str(exc_info.value)
+            assert "Either DFDRIFT_SLACK_WEBHOOK_URL or DFDRIFT_SLACK_BOT_TOKEN must be provided" in str(exc_info.value)
 
     def test_init_no_channel_raises_error(self):
         """Test SlackAlerter raises error when no channel provided"""
@@ -49,11 +49,11 @@ class TestSlackAlerter:
             with pytest.raises(ValueError) as exc_info:
                 SlackAlerter(token="test-token")  # No channel argument or env var
             
-            assert "SLACK_CHANNEL must be provided when using bot token" in str(exc_info.value)
+            assert "DFDRIFT_SLACK_CHANNEL must be provided when using bot token" in str(exc_info.value)
 
     def test_init_with_env_channel(self):
         """Test SlackAlerter initialization with environment variable channel"""
-        with patch.dict(os.environ, {'SLACK_CHANNEL': '#env-channel'}):
+        with patch.dict(os.environ, {'DFDRIFT_SLACK_CHANNEL': '#env-channel'}):
             with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
                 mock_client = Mock()
                 mock_import.return_value = mock_client
@@ -66,7 +66,7 @@ class TestSlackAlerter:
     
     def test_init_with_both_env_vars(self):
         """Test SlackAlerter initialization with both token and channel from environment"""
-        with patch.dict(os.environ, {'SLACK_BOT_TOKEN': 'env-token', 'SLACK_CHANNEL': '#env-channel'}):
+        with patch.dict(os.environ, {'DFDRIFT_SLACK_BOT_TOKEN': 'env-token', 'DFDRIFT_SLACK_CHANNEL': '#env-channel'}):
             with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
                 mock_client = Mock()
                 mock_import.return_value = mock_client
@@ -196,7 +196,7 @@ class TestSlackAlerter:
     def test_init_with_env_webhook_url(self):
         """Test SlackAlerter initialization with environment variable webhook URL"""
         webhook_url = "https://hooks.slack.com/services/env/webhook"
-        with patch.dict(os.environ, {'SLACK_WEBHOOK_URL': webhook_url}):
+        with patch.dict(os.environ, {'DFDRIFT_SLACK_WEBHOOK_URL': webhook_url}):
             alerter = SlackAlerter()
             
             assert alerter.webhook_url == webhook_url
@@ -205,7 +205,7 @@ class TestSlackAlerter:
     def test_webhook_priority_over_token(self):
         """Test webhook URL takes priority over bot token"""
         webhook_url = "https://hooks.slack.com/services/priority/test"
-        with patch.dict(os.environ, {'SLACK_WEBHOOK_URL': webhook_url, 'SLACK_BOT_TOKEN': 'token'}):
+        with patch.dict(os.environ, {'DFDRIFT_SLACK_WEBHOOK_URL': webhook_url, 'DFDRIFT_SLACK_BOT_TOKEN': 'token'}):
             alerter = SlackAlerter()
             
             assert alerter.webhook_url == webhook_url
@@ -317,4 +317,4 @@ class TestSlackAlerter:
             with pytest.raises(ValueError) as exc_info:
                 SlackAlerter()
             
-            assert "Either SLACK_WEBHOOK_URL or SLACK_BOT_TOKEN must be provided" in str(exc_info.value)
+            assert "Either DFDRIFT_SLACK_WEBHOOK_URL or DFDRIFT_SLACK_BOT_TOKEN must be provided" in str(exc_info.value)

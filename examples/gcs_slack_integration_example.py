@@ -12,17 +12,17 @@ Requirements:
 - Set required environment variables
 
 Environment Variables:
-- GCS_BUCKET: Google Cloud Storage bucket name
-- GCS_PREFIX: Optional prefix for schema files (defaults to "dfdrift")
+- DFDRIFT_GCS_BUCKET: Google Cloud Storage bucket name
+- DFDRIFT_GCS_PREFIX: Optional prefix for schema files (defaults to "dfdrift")
 - GOOGLE_APPLICATION_CREDENTIALS: Path to service account key file
 
 Slack Configuration (choose one):
 Option 1 (Recommended) - Incoming Webhook:
-- SLACK_WEBHOOK_URL: Slack incoming webhook URL
+- DFDRIFT_SLACK_WEBHOOK_URL: Slack incoming webhook URL
 
 Option 2 (Advanced) - Bot Token:
-- SLACK_BOT_TOKEN: Slack bot token (xoxb-...)
-- SLACK_CHANNEL: Slack channel for notifications (#channel-name)
+- DFDRIFT_SLACK_BOT_TOKEN: Slack bot token (xoxb-...)
+- DFDRIFT_SLACK_CHANNEL: Slack channel for notifications (#channel-name)
 """
 
 import datetime
@@ -38,29 +38,29 @@ def production_example():
     print("Using GCS for storage and Slack for notifications")
     
     # Check required environment variables
-    gcs_bucket = os.getenv("GCS_BUCKET")
-    has_webhook = bool(os.getenv("SLACK_WEBHOOK_URL"))
-    has_bot_token = bool(os.getenv("SLACK_BOT_TOKEN") and os.getenv("SLACK_CHANNEL"))
+    gcs_bucket = os.getenv("DFDRIFT_GCS_BUCKET")
+    has_webhook = bool(os.getenv("DFDRIFT_SLACK_WEBHOOK_URL"))
+    has_bot_token = bool(os.getenv("DFDRIFT_SLACK_BOT_TOKEN") and os.getenv("DFDRIFT_SLACK_CHANNEL"))
     
     if not gcs_bucket:
-        print("Missing required environment variable: GCS_BUCKET")
-        print("export GCS_BUCKET='your-bucket-name'")
+        print("Missing required environment variable: DFDRIFT_GCS_BUCKET")
+        print("export DFDRIFT_GCS_BUCKET='your-bucket-name'")
         return
         
     if not has_webhook and not has_bot_token:
         print("Missing Slack configuration. Choose one option:")
         print("\nOption 1 (Recommended) - Incoming Webhook:")
-        print("export SLACK_WEBHOOK_URL='https://hooks.slack.com/services/YOUR/WEBHOOK/URL'")
+        print("export DFDRIFT_SLACK_WEBHOOK_URL='https://hooks.slack.com/services/YOUR/WEBHOOK/URL'")
         print("\nOption 2 (Advanced) - Bot Token:")
-        print("export SLACK_BOT_TOKEN='xoxb-your-bot-token'")
-        print("export SLACK_CHANNEL='#your-channel'")
+        print("export DFDRIFT_SLACK_BOT_TOKEN='xoxb-your-bot-token'")
+        print("export DFDRIFT_SLACK_CHANNEL='#your-channel'")
         print("\nAlso set (for both options):")
-        print("export GCS_BUCKET='your-bucket-name'")
+        print("export DFDRIFT_GCS_BUCKET='your-bucket-name'")
         print("export GOOGLE_APPLICATION_CREDENTIALS='/path/to/service-account.json'")
         return
     
     # Configure storage and alerter using environment variables
-    gcs_storage = dfdrift.GcsStorage()  # Uses GCS_BUCKET and GCS_PREFIX
+    gcs_storage = dfdrift.GcsStorage()  # Uses DFDRIFT_GCS_BUCKET and DFDRIFT_GCS_PREFIX
     slack_alerter = dfdrift.SlackAlerter()  # Uses webhook URL or bot token from env vars
     
     validator = dfdrift.DfValidator(storage=gcs_storage, alerter=slack_alerter)
@@ -91,28 +91,28 @@ if __name__ == "__main__":
     print("=" * 50)
     
     # Check if basic requirements are met
-    gcs_bucket = os.getenv("GCS_BUCKET")
-    has_webhook = bool(os.getenv("SLACK_WEBHOOK_URL"))
-    has_bot_token = bool(os.getenv("SLACK_BOT_TOKEN") and os.getenv("SLACK_CHANNEL"))
+    gcs_bucket = os.getenv("DFDRIFT_GCS_BUCKET")
+    has_webhook = bool(os.getenv("DFDRIFT_SLACK_WEBHOOK_URL"))
+    has_bot_token = bool(os.getenv("DFDRIFT_SLACK_BOT_TOKEN") and os.getenv("DFDRIFT_SLACK_CHANNEL"))
     
     if not gcs_bucket or (not has_webhook and not has_bot_token):
         missing_components = []
         if not gcs_bucket:
-            missing_components.append("GCS_BUCKET")
+            missing_components.append("DFDRIFT_GCS_BUCKET")
         if not has_webhook and not has_bot_token:
             missing_components.append("Slack configuration")
             
         print(f"\nMissing required components: {', '.join(missing_components)}")
         print("\nTo run these examples, please set:")
-        print("export GCS_BUCKET='your-dfdrift-bucket'")
-        print("export GCS_PREFIX='examples'  # Optional")
+        print("export DFDRIFT_GCS_BUCKET='your-dfdrift-bucket'")
+        print("export DFDRIFT_GCS_PREFIX='examples'  # Optional")
         print("export GOOGLE_APPLICATION_CREDENTIALS='/path/to/service-account.json'")
         print("\nFor Slack configuration, choose one option:")
         print("Option 1 (Recommended) - Incoming Webhook:")
-        print("export SLACK_WEBHOOK_URL='https://hooks.slack.com/services/YOUR/WEBHOOK/URL'")
+        print("export DFDRIFT_SLACK_WEBHOOK_URL='https://hooks.slack.com/services/YOUR/WEBHOOK/URL'")
         print("\nOption 2 (Advanced) - Bot Token:")
-        print("export SLACK_BOT_TOKEN='xoxb-your-bot-token'")
-        print("export SLACK_CHANNEL='#data-monitoring'")
+        print("export DFDRIFT_SLACK_BOT_TOKEN='xoxb-your-bot-token'")
+        print("export DFDRIFT_SLACK_CHANNEL='#data-monitoring'")
         exit(1)
     
     try:
@@ -121,11 +121,11 @@ if __name__ == "__main__":
         
         print("\n" + "=" * 50)
         print("All examples completed successfully!")
-        print(f"Check your GCS bucket: gs://{os.getenv('GCS_BUCKET')}")
+        print(f"Check your GCS bucket: gs://{os.getenv('DFDRIFT_GCS_BUCKET')}")
         if has_webhook:
             print("Check your Slack channel for webhook notifications")
         else:
-            print(f"Check your Slack channel: {os.getenv('SLACK_CHANNEL')}")
+            print(f"Check your Slack channel: {os.getenv('DFDRIFT_SLACK_CHANNEL')}")
         
     except Exception as e:
         print(f"\nError running examples: {e}")

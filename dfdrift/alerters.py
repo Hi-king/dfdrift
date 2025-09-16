@@ -21,9 +21,9 @@ class StderrAlerter(Alerter):
 class SlackAlerter(Alerter):
     def __init__(self, webhook_url: Optional[str] = None, channel: Optional[str] = None, token: Optional[str] = None):
         # Priority: webhook_url > token
-        self.webhook_url = webhook_url or os.getenv("SLACK_WEBHOOK_URL")
-        self.token = token or os.getenv("SLACK_BOT_TOKEN")
-        self.channel = channel or os.getenv("SLACK_CHANNEL")
+        self.webhook_url = webhook_url or os.getenv("DFDRIFT_SLACK_WEBHOOK_URL")
+        self.token = token or os.getenv("DFDRIFT_SLACK_BOT_TOKEN")
+        self.channel = channel or os.getenv("DFDRIFT_SLACK_CHANNEL")
         
         if self.webhook_url:
             # Using webhook - no additional validation needed
@@ -31,10 +31,10 @@ class SlackAlerter(Alerter):
         else:
             # Using bot token - need both token and channel
             if not self.token:
-                raise ValueError("Either SLACK_WEBHOOK_URL or SLACK_BOT_TOKEN must be provided")
+                raise ValueError("Either DFDRIFT_SLACK_WEBHOOK_URL or DFDRIFT_SLACK_BOT_TOKEN must be provided")
             
             if not self.channel:
-                raise ValueError("SLACK_CHANNEL must be provided when using bot token")
+                raise ValueError("DFDRIFT_SLACK_CHANNEL must be provided when using bot token")
             
             self.client = self._import_slack_sdk()
     

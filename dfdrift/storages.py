@@ -38,11 +38,11 @@ class LocalFileStorage(SchemaStorage):
 
 class GcsStorage(SchemaStorage):
     def __init__(self, bucket: Optional[str] = None, prefix: Optional[str] = None):
-        self.bucket = bucket or os.getenv("GCS_BUCKET")
-        self.prefix = prefix or os.getenv("GCS_PREFIX", "dfdrift")
+        self.bucket = bucket or os.getenv("DFDRIFT_GCS_BUCKET")
+        self.prefix = prefix or os.getenv("DFDRIFT_GCS_PREFIX", "dfdrift")
         
         if not self.bucket:
-            raise ValueError("GCS bucket must be provided either as argument or GCS_BUCKET environment variable")
+            raise ValueError("GCS bucket must be provided either as argument or DFDRIFT_GCS_BUCKET environment variable")
         
         # Ensure prefix doesn't start with / and ends with /
         if self.prefix.startswith("/"):

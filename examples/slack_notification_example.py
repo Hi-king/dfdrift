@@ -11,13 +11,13 @@ Two authentication methods are supported:
 1. Incoming Webhook (Recommended):
    - Create an Incoming Webhook from https://api.slack.com/apps
    - Simpler setup, no additional permissions needed
-   - Set SLACK_WEBHOOK_URL environment variable
+   - Set DFDRIFT_SLACK_WEBHOOK_URL environment variable
 
 2. Bot Token (Advanced):
    - Create a Slack Bot Token from https://api.slack.com/apps
    - Set up the bot with chat:write permissions
    - Add the bot to your desired channel
-   - Set SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables
+   - Set DFDRIFT_SLACK_BOT_TOKEN and DFDRIFT_SLACK_CHANNEL environment variables
 """
 
 import os
@@ -25,15 +25,15 @@ import pandas as pd
 import dfdrift
 
 # Method 1: Using Incoming Webhook (recommended)
-# Set SLACK_WEBHOOK_URL environment variable
-# export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+# Set DFDRIFT_SLACK_WEBHOOK_URL environment variable
+# export DFDRIFT_SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 
 def example_with_webhook():
     """Example using Slack Incoming Webhook (simplest configuration)"""
     
     # Configure with Slack webhook alerts using environment variable
     storage = dfdrift.LocalFileStorage("./webhook_slack_schemas")
-    slack_alerter = dfdrift.SlackAlerter()  # webhook URL from SLACK_WEBHOOK_URL env var
+    slack_alerter = dfdrift.SlackAlerter()  # webhook URL from DFDRIFT_SLACK_WEBHOOK_URL env var
     
     validator = dfdrift.DfValidator(storage=storage, alerter=slack_alerter)
     
@@ -79,12 +79,12 @@ def example_with_webhook_direct():
 
 
 # Method 2: Using Bot Token (advanced)
-# Set SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables
-# export SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
-# export SLACK_CHANNEL="#data-alerts"
+# Set DFDRIFT_SLACK_BOT_TOKEN and DFDRIFT_SLACK_CHANNEL environment variables
+# export DFDRIFT_SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
+# export DFDRIFT_SLACK_CHANNEL="#data-alerts"
 
 def example_with_bot_token_env_vars():
-    """Example using SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables"""
+    """Example using DFDRIFT_SLACK_BOT_TOKEN and DFDRIFT_SLACK_CHANNEL environment variables"""
     
     # Configure with Slack alerts using environment variables
     storage = dfdrift.LocalFileStorage("./slack_schemas")
@@ -115,8 +115,8 @@ def example_with_bot_token_env_vars():
 def example_with_bot_token_env_token_only():
     """Example using SLACK_BOT_TOKEN env var with channel argument"""
     
-    # Set SLACK_BOT_TOKEN environment variable, specify channel in code
-    # export SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
+    # Set DFDRIFT_SLACK_BOT_TOKEN environment variable, specify channel in code
+    # export DFDRIFT_SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
     
     # Configure with Slack alerts using token from env, channel from argument
     storage = dfdrift.LocalFileStorage("./slack_schemas")
@@ -140,8 +140,8 @@ def example_with_pandas_wrapper():
     import dfdrift.pandas as pd_drift
     
     # Configure global validation with Slack using environment variables
-    # export SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
-    # export SLACK_CHANNEL="#dataframe-monitoring"
+    # export DFDRIFT_SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
+    # export DFDRIFT_SLACK_CHANNEL="#dataframe-monitoring"
     
     storage = dfdrift.LocalFileStorage("./pandas_slack_schemas")
     slack_alerter = dfdrift.SlackAlerter()  # token and channel from env vars
@@ -183,20 +183,20 @@ def example_with_bot_token_direct_arguments():
 if __name__ == "__main__":
     print("Slack notification examples for dfdrift")
     print("Two authentication methods supported:")
-    print("1. Incoming Webhook (recommended): Set SLACK_WEBHOOK_URL")
-    print("2. Bot Token (advanced): Set SLACK_BOT_TOKEN and SLACK_CHANNEL")
+    print("1. Incoming Webhook (recommended): Set DFDRIFT_SLACK_WEBHOOK_URL")
+    print("2. Bot Token (advanced): Set DFDRIFT_SLACK_BOT_TOKEN and DFDRIFT_SLACK_CHANNEL")
     
     # Check if webhook URL or bot token is available
-    has_webhook = bool(os.getenv("SLACK_WEBHOOK_URL"))
-    has_bot_token = bool(os.getenv("SLACK_BOT_TOKEN"))
+    has_webhook = bool(os.getenv("DFDRIFT_SLACK_WEBHOOK_URL"))
+    has_bot_token = bool(os.getenv("DFDRIFT_SLACK_BOT_TOKEN"))
     
     if not has_webhook and not has_bot_token:
         print("\nNo Slack configuration found. Choose one option:")
         print("\nOption 1 (Recommended) - Incoming Webhook:")
-        print("export SLACK_WEBHOOK_URL='https://hooks.slack.com/services/YOUR/WEBHOOK/URL'")
+        print("export DFDRIFT_SLACK_WEBHOOK_URL='https://hooks.slack.com/services/YOUR/WEBHOOK/URL'")
         print("\nOption 2 (Advanced) - Bot Token:")
-        print("export SLACK_BOT_TOKEN='xoxb-your-bot-token-here'")
-        print("export SLACK_CHANNEL='#data-alerts'")
+        print("export DFDRIFT_SLACK_BOT_TOKEN='xoxb-your-bot-token-here'")
+        print("export DFDRIFT_SLACK_CHANNEL='#data-alerts'")
         exit(1)
     
     if has_webhook:

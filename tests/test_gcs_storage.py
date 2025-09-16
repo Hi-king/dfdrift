@@ -23,7 +23,7 @@ class TestGcsStorage:
 
     def test_init_with_env_bucket(self):
         """Test GcsStorage initialization with environment variable bucket"""
-        with patch.dict(os.environ, {'GCS_BUCKET': 'env-bucket', 'GCS_PREFIX': 'env-prefix'}):
+        with patch.dict(os.environ, {'DFDRIFT_GCS_BUCKET': 'env-bucket', 'DFDRIFT_GCS_PREFIX': 'env-prefix'}):
             with patch('dfdrift.storages.GcsStorage._import_gcs_client') as mock_import:
                 mock_client = Mock()
                 mock_import.return_value = mock_client
@@ -39,7 +39,7 @@ class TestGcsStorage:
             with pytest.raises(ValueError) as exc_info:
                 GcsStorage()
             
-            assert "GCS bucket must be provided" in str(exc_info.value)
+            assert "GCS bucket must be provided either as argument or DFDRIFT_GCS_BUCKET environment variable" in str(exc_info.value)
 
     def test_init_missing_gcs_package_raises_import_error(self):
         """Test GcsStorage raises ImportError when google-cloud-storage not installed"""
