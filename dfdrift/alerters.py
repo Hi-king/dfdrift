@@ -62,7 +62,6 @@ class SlackAlerter(Alerter):
                 text=slack_message,
                 mrkdwn=True
             )
-            
             if not response["ok"]:
                 print(f"Failed to send Slack message: {response.get('error', 'Unknown error')}", file=sys.stderr)
                 # Fallback to stderr

@@ -42,7 +42,7 @@ def example_with_env_vars():
     df2 = pd.DataFrame({
         'user_id': ['a', 'b', 'c'],  # Changed to string!
         'name': ['David', 'Eve', 'Frank'],
-        'age': [28, 32, 27]
+        'age2': [28, 32, 27]
     })
     validator.validate(df2)
     print("Second validation complete - Slack alert sent!")
