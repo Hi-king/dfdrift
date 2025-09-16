@@ -15,16 +15,17 @@ import os
 import pandas as pd
 import dfdrift
 
-# Method 1: Using environment variable (recommended)
-# Set SLACK_BOT_TOKEN environment variable
+# Method 1: Using environment variables (recommended)
+# Set SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables
 # export SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
+# export SLACK_CHANNEL="#data-alerts"
 
-def example_with_env_token():
-    """Example using SLACK_BOT_TOKEN environment variable"""
+def example_with_env_vars():
+    """Example using SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables"""
     
-    # Configure with Slack alerts using environment variable
+    # Configure with Slack alerts using environment variables
     storage = dfdrift.LocalFileStorage("./slack_schemas")
-    slack_alerter = dfdrift.SlackAlerter(channel="#data-alerts")  # token from env
+    slack_alerter = dfdrift.SlackAlerter()  # token and channel from env vars
     
     validator = dfdrift.DfValidator(storage=storage, alerter=slack_alerter)
     
@@ -47,16 +48,16 @@ def example_with_env_token():
     print("Second validation complete - Slack alert sent!")
 
 
-# Method 2: Using token argument
-def example_with_token_argument():
-    """Example passing token directly (not recommended for production)"""
+# Method 2: Using partial environment variables
+def example_with_env_token_only():
+    """Example using SLACK_BOT_TOKEN env var with channel argument"""
     
-    # Get token from secure storage in production
-    token = os.getenv("SLACK_BOT_TOKEN", "xoxb-your-token-here")
+    # Set SLACK_BOT_TOKEN environment variable, specify channel in code
+    # export SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
     
-    # Configure with Slack alerts using token argument
+    # Configure with Slack alerts using token from env, channel from argument
     storage = dfdrift.LocalFileStorage("./slack_schemas")
-    slack_alerter = dfdrift.SlackAlerter(channel="#general", token=token)
+    slack_alerter = dfdrift.SlackAlerter(channel="#general")  # token from env
     
     validator = dfdrift.DfValidator(storage=storage, alerter=slack_alerter)
     
@@ -75,9 +76,12 @@ def example_with_pandas_wrapper():
     
     import dfdrift.pandas as pd_drift
     
-    # Configure global validation with Slack
+    # Configure global validation with Slack using environment variables
+    # export SLACK_BOT_TOKEN="xoxb-your-bot-token-here"
+    # export SLACK_CHANNEL="#dataframe-monitoring"
+    
     storage = dfdrift.LocalFileStorage("./pandas_slack_schemas")
-    slack_alerter = dfdrift.SlackAlerter(channel="#dataframe-monitoring")
+    slack_alerter = dfdrift.SlackAlerter()  # token and channel from env vars
     
     pd_drift.configure_validation(storage=storage, alerter=slack_alerter)
     
@@ -91,23 +95,49 @@ def example_with_pandas_wrapper():
     print("DataFrame created and monitored automatically!")
 
 
+# Method 4: Using direct arguments (not recommended for production)
+def example_with_direct_arguments():
+    """Example passing both token and channel directly (for testing)"""
+    
+    # Configure with Slack alerts using direct arguments
+    storage = dfdrift.LocalFileStorage("./direct_slack_schemas")
+    slack_alerter = dfdrift.SlackAlerter(
+        channel="#test-channel",
+        token="xoxb-your-bot-token-here"  # Should be from secure storage
+    )
+    
+    validator = dfdrift.DfValidator(storage=storage, alerter=slack_alerter)
+    
+    # Create test DataFrame
+    df = pd.DataFrame({
+        'test_col': [1, 2, 3],
+        'status': ['pass', 'fail', 'pass']
+    })
+    validator.validate(df)
+    print("Direct arguments example completed")
+
+
 if __name__ == "__main__":
     print("Slack notification examples for dfdrift")
-    print("Make sure to set SLACK_BOT_TOKEN environment variable")
+    print("Make sure to set SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables")
     
-    # Check if token is available
+    # Check if token and channel are available
     if not os.getenv("SLACK_BOT_TOKEN"):
         print("Warning: SLACK_BOT_TOKEN not set. Set it before running examples:")
         print("export SLACK_BOT_TOKEN='xoxb-your-bot-token-here'")
+        print("export SLACK_CHANNEL='#data-alerts'")
         exit(1)
     
-    print("\n1. Running example with environment token...")
-    example_with_env_token()
+    print("\n1. Running example with environment variables...")
+    example_with_env_vars()
     
-    print("\n2. Running example with token argument...")
-    example_with_token_argument()
+    print("\n2. Running example with partial environment variables...")
+    example_with_env_token_only()
     
     print("\n3. Running example with pandas wrapper...")
     example_with_pandas_wrapper()
+    
+    print("\n4. Running example with direct arguments...")
+    example_with_direct_arguments()
     
     print("\nAll examples completed! Check your Slack channel for notifications.")

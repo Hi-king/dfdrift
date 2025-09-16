@@ -42,10 +42,37 @@ class TestSlackAlerter:
 
     def test_init_no_channel_raises_error(self):
         """Test SlackAlerter raises error when no channel provided"""
-        with pytest.raises(TypeError) as exc_info:
-            SlackAlerter()  # Missing required channel argument
-        
-        assert "missing 1 required positional argument: 'channel'" in str(exc_info.value)
+        with patch.dict(os.environ, {}, clear=True):  # Clear environment variables
+            with pytest.raises(ValueError) as exc_info:
+                SlackAlerter(token="test-token")  # No channel argument or env var
+            
+            assert "Slack channel must be provided either as argument or SLACK_CHANNEL environment variable" in str(exc_info.value)
+
+    def test_init_with_env_channel(self):
+        """Test SlackAlerter initialization with environment variable channel"""
+        with patch.dict(os.environ, {'SLACK_CHANNEL': '#env-channel'}):
+            with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
+                mock_client = Mock()
+                mock_import.return_value = mock_client
+                
+                alerter = SlackAlerter(token="test-token")
+                
+                assert alerter.token == "test-token"
+                assert alerter.channel == "#env-channel"
+                assert alerter.client == mock_client
+    
+    def test_init_with_both_env_vars(self):
+        """Test SlackAlerter initialization with both token and channel from environment"""
+        with patch.dict(os.environ, {'SLACK_BOT_TOKEN': 'env-token', 'SLACK_CHANNEL': '#env-channel'}):
+            with patch('dfdrift.alerters.SlackAlerter._import_slack_sdk') as mock_import:
+                mock_client = Mock()
+                mock_import.return_value = mock_client
+                
+                alerter = SlackAlerter()  # No arguments, use env vars
+                
+                assert alerter.token == "env-token"
+                assert alerter.channel == "#env-channel"
+                assert alerter.client == mock_client
 
     def test_init_missing_slack_sdk_raises_import_error(self):
         """Test SlackAlerter raises ImportError when slack-sdk not installed"""

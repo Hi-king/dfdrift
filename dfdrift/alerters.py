@@ -17,15 +17,15 @@ class StderrAlerter(Alerter):
 
 
 class SlackAlerter(Alerter):
-    def __init__(self, channel: str, token: Optional[str] = None):
+    def __init__(self, channel: Optional[str] = None, token: Optional[str] = None):
         self.token = token or os.getenv("SLACK_BOT_TOKEN")
-        self.channel = channel
+        self.channel = channel or os.getenv("SLACK_CHANNEL")
         
         if not self.token:
             raise ValueError("Slack token must be provided either as argument or SLACK_BOT_TOKEN environment variable")
         
         if not self.channel:
-            raise ValueError("Slack channel must be provided")
+            raise ValueError("Slack channel must be provided either as argument or SLACK_CHANNEL environment variable")
         
         self.client = self._import_slack_sdk()
     

@@ -121,11 +121,15 @@ pd.configure_validation(alerter=dfdrift.StderrAlerter())
 import dfdrift.pandas as pd
 
 # Configure Slack alerts (requires: pip install dfdrift[slack])
-# Set SLACK_BOT_TOKEN environment variable
+# Set SLACK_BOT_TOKEN and SLACK_CHANNEL environment variables
+slack_alerter = dfdrift.SlackAlerter()  # Uses env vars
+pd.configure_validation(alerter=slack_alerter)
+
+# Or specify channel argument (token from env var)
 slack_alerter = dfdrift.SlackAlerter(channel="#data-alerts")
 pd.configure_validation(alerter=slack_alerter)
 
-# Or pass token directly (not recommended for production)
+# Or pass both token and channel directly (not recommended for production)
 slack_alerter = dfdrift.SlackAlerter(
     channel="#data-alerts",
     token="xoxb-your-bot-token"

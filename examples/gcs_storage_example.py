@@ -25,10 +25,12 @@ def example_with_env_variables():
     # export GCS_BUCKET="my-dfdrift-bucket"
     # export GCS_PREFIX="schemas/production"  # Optional, defaults to "dfdrift"
     # export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
+    # export SLACK_BOT_TOKEN="xoxb-your-slack-bot-token"
+    # export SLACK_CHANNEL="#data-monitoring"
     
-    # Configure with GCS storage using environment variables
+    # Configure with GCS storage and Slack alerter using environment variables
     gcs_storage = dfdrift.GcsStorage()  # bucket and prefix from env vars
-    slack_alerter = dfdrift.SlackAlerter(channel="#data-monitoring")
+    slack_alerter = dfdrift.SlackAlerter()  # token and channel from env vars
     
     validator = dfdrift.DfValidator(storage=gcs_storage, alerter=slack_alerter)
     
@@ -143,9 +145,11 @@ def kubernetes_example():
     #     secretKeyRef:
     #       name: slack-credentials
     #       key: bot-token
+    # - name: SLACK_CHANNEL
+    #   value: "#ml-monitoring"
     
     gcs_storage = dfdrift.GcsStorage()
-    slack_alerter = dfdrift.SlackAlerter(channel="#ml-monitoring")
+    slack_alerter = dfdrift.SlackAlerter()  # token and channel from env vars
     
     validator = dfdrift.DfValidator(storage=gcs_storage, alerter=slack_alerter)
     
